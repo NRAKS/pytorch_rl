@@ -54,15 +54,14 @@ class DDPG(object):
         if USE_CUDA: self.cuda()
 
     def update_policy(self):
-        #sample batch
+        # sample batch
         state_batch, action_batch, reward_batch, next_state_batch, terminal_batch = self.memory.sample_and_split(self.batch_size)
 
-        #Prepare for the target q batch
+        # Prepare for the target q batch
         next_q_values = self.critic_target([
-            to_tensor(next_state_batch, volatile=True),
-            self.actor_target(to_tensor(next_state_batch, volatile=True)),
+            to_tensor(next_state_batch),
+            self.actor_target(to_tensor(next_state_batch)),
         ])
-        next_q_values.volatile=False
 
         target_q_batch = to_tensor(reward_batch) + self.discount*to_tensor(terminal_batch.astype(np.float)) * next_q_values
 
@@ -117,7 +116,7 @@ class DDPG(object):
         action = to_numpy(
             self.actor(to_tensor(np.array([s_t])))
         ).squeeze(0)
-        action += self.is_training*max(self.epsilon, 0)*self.random_process.sample()
+        action += self.is_training * max(self.epsilon, 0) * self.random_process.sample()
         action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
@@ -140,7 +139,6 @@ class DDPG(object):
         self.critic.load_state_dict(
             torch.load('{}/critic.pkl'.format(output))
         )
-
 
     def save_model(self, output):
         torch.save(

@@ -27,6 +27,7 @@ class Actor(nn.Module):
         self.fc3.weight.data.uniform_(-init_w, init_w)
 
     def forward(self, x):
+        # print("x.size:{}" .format((x.size())))
         out = self.fc1(x)
         out = self.relu(out)
         out = self.fc2(out)
