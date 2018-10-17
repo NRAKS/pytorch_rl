@@ -13,7 +13,7 @@ from multiagent.multi_discrete import MultiDiscrete
 
 from normalized_env import NormalizedEnv
 from evaluator import Evaluator
-from ddpg import DDPG
+from maddpg import MADDPG
 from util import *
 
 # import line_profiler
@@ -33,6 +33,7 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
     observation = None
     t_start = time.time()
     eval_t_start = time.time()
+    max_replay_memory_len = args.bsize * args.max_episode_length
 
     print("Starting iterations...")
     while True:
@@ -59,6 +60,8 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         done = all(done)
 
         episode_steps += 1
+        # print("step:{}" .format(step))
+        # print("episode_step:{}" .format(episode_steps))
         terminal = (episode_steps >= args.max_episode_length)
 
         # if max_episode_length and episode_steps >= max_episode_length -1:
@@ -68,9 +71,9 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         for n_agent in range(len(agent)):
             agent[n_agent].observe(reward[n_agent], observation2[n_agent], done)
 
-        if step > args.bsize and step % 100 == 0:
+        if step >= max_replay_memory_len and step % 100 == 0:
             for n_agent in range(len(agent)):
-                agent[n_agent].update_policy()
+                agent[n_agent].update_policy(agent)
 
         # [optional] evaluate
         if evaluate is not None and validate_steps > 0 and step % validate_steps == 0:
@@ -89,33 +92,28 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
 
         # update
         step += 1
-       
+  
         for i, rew in enumerate(reward):
             episode_reward[-1] += rew
             agent_reward[i][-1] += rew
 
         observation = observation2
 
-        # for displaying learned policies
-        if args.display:
-            time.sleep(0.1)
-            env.render()
-            continue
+        # # for displaying learned policies
+        # if args.display and (len(episode_reward) % args.show_epi_rate) >= 950:
+        #     print("len_episode_reward:{}" .format(len(episode_reward)))
+        #     time.sleep(0.1)
+        #     env.render()
+        #     continue
 
         if (terminal and (len(episode_reward) % args.show_epi_rate) == 0):
             if debug:
                 prGreen('#episode: {} episode_reward: {} steps: {} time: {}'.format(len(episode_reward), np.mean(episode_reward[-args.show_epi_rate]), step, time.time() - t_start))
                 t_start = time.time()
-                episode_steps = 0
+                step_in_episode = 0
 
         if done or terminal:  # end of episode
             # print("done=true")
-            for n_agent in range(len(agent)):
-                agent[n_agent].memory.append(
-                    observation[n_agent],
-                    agent[n_agent].select_action(observation[n_agent]),
-                    0., False
-                )
             # reset
             observation = None
             # episode_steps = 0
@@ -127,6 +125,13 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         if len(episode_reward) > args.train_iter:
             print("...Finished total of {} episodes".format(len(episode_reward)))
             break
+        
+        # for displaying learned policies
+        if args.display and (len(episode_reward) % args.show_epi_rate) >= 995:
+            print("len_episode_reward:{}" .format(len(episode_reward)))
+            time.sleep(0.1)
+            env.render()
+            continue
     
 
 def make_env(scenario_name, arglist=None, benchmark=False):
@@ -180,13 +185,13 @@ if __name__ == "__main__":
     # parser.add_argument('--env', default='Pendulum-v0', type=str, help='open-ai gym environment')
     parser.add_argument("--env", type=str, default="simple", help="name of the scenario script")
     # training parameters
-    parser.add_argument('--hidden1', default=400, type=int, help='hidden num of first fully connect layer')
-    parser.add_argument('--hidden2', default=300, type=int, help='hidden num of second fully connect layer')
+    parser.add_argument('--hidden1', default=64, type=int, help='hidden num of first fully connect layer')
+    parser.add_argument('--hidden2', default=64, type=int, help='hidden num of second fully connect layer')
     parser.add_argument('--rate', default=1e-2, type=float, help='learning rate')
     parser.add_argument('--prate', default=1e-2, type=float, help='policy net learning rate (only for DDPG)')
     parser.add_argument('--discount', default=0.95, type=float, help='')
     parser.add_argument('--bsize', default=1024, type=int, help='minibatch size')
-    parser.add_argument('--rmsize', default=6000000, type=int, help='memory size')
+    parser.add_argument('--rmsize', default=int(1e6), type=int, help='memory size')
 
     parser.add_argument('--window_length', default=1, type=int, help='')
     parser.add_argument('--tau', default=0.001, type=float, help='moving average for target network')
@@ -249,27 +254,9 @@ if __name__ == "__main__":
             nb_actions = num_out_pol
             
 
-    # obs_shape_n = [env.observation_space[i].shape for i in range(env.n)]
-    # print("env_n:{}" .format(env.n))
-    # print("obs_shape_n:{}" .format(obs_shape_n))
-    # print("env.action_space:{}" .format(env.action_space))
-    # print("env.observation_space:{}" .format(env.observation_space))
-    # nb_states = env.observation_space[0].shape[0]
-    # nb_actions = env.action_space
-    # print("nb_actions:{}" .format(nb_actions))
-
-    # if isinstance(nb_actions, Box):
-    #     discrete_action = False
-    #     get_shape = lambda x: x.shape[0]
-    # else:  # Discrete
-    #     discrete_action = True
-    #     get_shape = lambda x: x.n
-
-    # num_out_pol = get_shape(nb_actions)
-    # print("num_out_pol".format(num_out_pol))
     agent = []
     for _ in range(env.n):
-        agent.append(DDPG(nb_states, nb_actions, args))
+        agent.append(MADDPG(nb_states, nb_actions, args, env.n))
     # print("agent:{}" .format(agent))
     # print("agent_init_params:{}" .format(agent_init_params))
 

@@ -4,6 +4,8 @@ import numpy as np
 import argparse
 from copy import deepcopy
 import time
+import matplotlib.pyplot as plt
+from matplotlib import animation
 
 import torch
 import gym
@@ -54,7 +56,7 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         # env response with next_observation, reward, terminate_info
         # print("action:{}" .format(action))
         observation2, reward, done, info = env.step(action)
-        # print("observation2:{}" .format(observation2))
+        print("len observation2:{}" .format(len(observation2[0])))
         # print("reward:{}" .format(reward))
         done = all(done)
 
@@ -248,30 +250,9 @@ if __name__ == "__main__":
             nb_states = num_in_pol
             nb_actions = num_out_pol
             
-
-    # obs_shape_n = [env.observation_space[i].shape for i in range(env.n)]
-    # print("env_n:{}" .format(env.n))
-    # print("obs_shape_n:{}" .format(obs_shape_n))
-    # print("env.action_space:{}" .format(env.action_space))
-    # print("env.observation_space:{}" .format(env.observation_space))
-    # nb_states = env.observation_space[0].shape[0]
-    # nb_actions = env.action_space
-    # print("nb_actions:{}" .format(nb_actions))
-
-    # if isinstance(nb_actions, Box):
-    #     discrete_action = False
-    #     get_shape = lambda x: x.shape[0]
-    # else:  # Discrete
-    #     discrete_action = True
-    #     get_shape = lambda x: x.n
-
-    # num_out_pol = get_shape(nb_actions)
-    # print("num_out_pol".format(num_out_pol))
     agent = []
     for _ in range(env.n):
         agent.append(DDPG(nb_states, nb_actions, args))
-    # print("agent:{}" .format(agent))
-    # print("agent_init_params:{}" .format(agent_init_params))
 
     if args.Evaluate is True:
         evaluate = Evaluator(args.validate_episodes,

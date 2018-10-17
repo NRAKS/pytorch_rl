@@ -126,6 +126,10 @@ class SequentialMemory(Memory):
         self.terminals = RingBuffer(limit)
         self.observations = RingBuffer(limit)
 
+    def sample_batch_idxs(self, batch_size):
+        batch_idxs = sample_batch_indexes(0, self.nb_entries -1, size=batch_size)
+        return batch_idxs
+
     def sample(self, batch_size, batch_idxs=None):
         if batch_idxs is None:
             # Draw random indexes such that we have at least a single entry before each
