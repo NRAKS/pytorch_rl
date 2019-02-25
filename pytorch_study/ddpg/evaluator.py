@@ -44,7 +44,8 @@ class Evaluator(object):
 
                 # update
                 # print("reward:{}" .format(reward))
-                episode_reward += reward[0]
+                # episode_reward += reward[0]
+                episode_reward += reward
                 episode_steps += 1
 
             if debug: prYellow('[Evaluate] #Episode{}: episode_reward:{}'.format(episode,episode_reward))

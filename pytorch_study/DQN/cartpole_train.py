@@ -14,10 +14,10 @@ device = th.device("cuda" if use_cuda else "cpu")
 FloatTensor = th.cuda.FloatTensor if use_cuda else th.FloatTensor
 
 def main():
-    env = gym.make("CartPole-v0")
+    env = gym.make("CartPole-v1")
     agent = DQN(dim_obs=env.observation_space.shape[0],
                 dim_act=env.action_space.n,
-                batch_size=50,
+                batch_size=64,
                 capacity=1000)
 
     reward_record = []
@@ -32,6 +32,7 @@ def main():
 
         for t in count():
             action = agent.select_action(obs)
+            print("action:{}".format(action))
             # print(env.step(action[0, 0]))
             obs_, reward, done, _ = env.step(action)
 

@@ -11,7 +11,7 @@ from evaluator import Evaluator
 from ddpg import DDPG
 from util import *
 
-gym.undo_logger_setup()
+# gym.undo_logger_setup()
 
 
 def train(num_iterations, agent, env,  evaluate, validate_steps, output, max_episode_length=None, debug=False):
@@ -20,6 +20,7 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, output, max_epi
     step = episode = episode_steps = 0
     episode_reward = 0.
     observation = None
+    reward_list = np.zeros(1)
     while step < num_iterations:
         # reset if it is the start of episode
         if observation is None:
@@ -35,6 +36,8 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, output, max_epi
         # env response with next_observation, reward, terminate_info
         observation2, reward, done, info = env.step(action)
         observation2 = deepcopy(observation2)
+        reward_list += reward
+
         if max_episode_length and episode_steps >= max_episode_length -1:
             done = True
 
@@ -68,11 +71,14 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, output, max_epi
                 0., False
             )
 
+            print("step:{}  reward:{}".format(step, reward_list))
+
             # reset
             observation = None
             episode_steps = 0
             episode_reward = 0.
             episode += 1
+            reward_list = np.zeros(1)
 
 
 def test(num_episodes, agent, env, evaluate, model_path, visualize=True, debug=False):
@@ -100,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument('--warmup', default=100, type=int, help='time without training but only filling the replay memory')
     parser.add_argument('--discount', default=0.99, type=float, help='')
     parser.add_argument('--bsize', default=64, type=int, help='minibatch size')
-    parser.add_argument('--rmsize', default=6000000, type=int, help='memory size')
+    parser.add_argument('--rmsize', default=50000, type=int, help='memory size')
     parser.add_argument('--window_length', default=1, type=int, help='')
     parser.add_argument('--tau', default=0.001, type=float, help='moving average for target network')
     parser.add_argument('--ou_theta', default=0.15, type=float, help='noise theta')
@@ -130,8 +136,11 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
         env.seed(args.seed)
 
+    # print(env.observation_space.shape[0])
     nb_states = env.observation_space.shape[0]
+    # print(env.action_space.n)
     nb_actions = env.action_space.shape[0]
+    # nb_actions = 2
 
 
     agent = DDPG(nb_states, nb_actions, args)

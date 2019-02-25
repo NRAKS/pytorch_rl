@@ -51,7 +51,7 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         else:
             # print("select")
             action = [agent[n_agent].select_action(observation[n_agent]) for n_agent in range(len(agent))]
-        
+
         # env response with next_observation, reward, terminate_info
         # print("action:{}" .format(action))
         observation2, reward, done, info = env.step(action)
@@ -74,6 +74,8 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         if step >= max_replay_memory_len and step % 100 == 0:
             for n_agent in range(len(agent)):
                 agent[n_agent].update_policy(agent)
+            for n_agent in range(len(agent)):
+                agent[n_agent].target_update()
 
         # [optional] evaluate
         if evaluate is not None and validate_steps > 0 and step % validate_steps == 0:
@@ -129,6 +131,7 @@ def train(num_iterations, agent, env,  evaluate, validate_steps, args, output, m
         # for displaying learned policies
         if args.display and (len(episode_reward) % args.show_epi_rate) >= 995:
             print("len_episode_reward:{}" .format(len(episode_reward)))
+            print("action:{}" .format(action))
             time.sleep(0.1)
             env.render()
             continue

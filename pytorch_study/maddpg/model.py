@@ -18,7 +18,7 @@ class Actor(nn.Module):
         self.fc2 = nn.Linear(hidden1, hidden2)
         self.fc3 = nn.Linear(hidden2, n_actions)
         self.relu = nn.ReLU()
-        self.tanh = nn.Tanh()
+        # self.tanh = nn.Tanh()
         self.init_weights(init_w)
 
     def init_weights(self, init_w):
@@ -33,7 +33,7 @@ class Actor(nn.Module):
         out = self.fc2(out)
         out = self.relu(out)
         out = self.fc3(out)
-        out = self.tanh(out)
+        # out = self.tanh(out)
         return out
 
 

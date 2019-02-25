@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 import torch
 import torch.nn as nn
@@ -68,6 +69,7 @@ class MADDPG(object):
             act_n.append(action_batch)
 
         obs, act, rew, obs_next, done = self.memory.sample_and_split(self.batch_size, self.replay_sample_idx)
+        # print("rew:{}" .format(rew))
 
         # print("self.n:{}" .format(self.n_agent))
         # print("len(obs_next_n[i]):{}" .format(len(obs_next_n)))
@@ -111,10 +113,12 @@ class MADDPG(object):
             # print("rew:{}" .format(to_tensor(rew)))
 
             # target_q_batch = to_tensor(rew) + self.discount * to_tensor(done.astype(np.float)) * next_q_values
+            # print("done:{}" .format(done))
             target_q_batch = to_tensor(rew) + self.discount * to_tensor(done.astype(np.float)) * next_q_values
             # print("target_q_batch:{}" .format(target_q_batch))
             # print("done.astype(np.float):{}" .format(done.astype(np.float)))
             # print("done:{}" .format(done))
+        # print("target_q_batch:{}" .format(target_q_batch))
         # Critic update
         self.critic.zero_grad()
 
@@ -142,16 +146,22 @@ class MADDPG(object):
         # print("type(self.actor(to_tensor(c))".format(type(self.actor(to_tensor(obs_n)))))
         # print("c.shape:{}" .format(c.shape))
 
-        policy_loss = -self.critic(to_tensor(b))
-        policy_loss = policy_loss.mean()
+        policy_loss = -self.critic(to_tensor(b)).mean()
+        p_out = self.actor(to_tensor(obs))
+        # print("p_out:{}" .format(p_out))
+        # print("p_out.shape:{}" .format(to_numpy(p_out).shape))
+        policy_loss += (p_out**2).mean() * 1e-3
+        # print("policy_loss:{}" .format(policy_loss))
         policy_loss.backward()
+        # torch.nn.utils.clip_grad_norm(self.actor.parameters(), 0.5)
         self.actor_optim.step()
 
+    def target_update(self):
         # Target update
-        # soft_update(self.actor_target, self.actor, self.tau)
-        # soft_update(self.critic_target, self.critic, self.tau)
-        hard_update(self.actor_target, self.actor)
-        hard_update(self.critic_target, self.critic)
+        soft_update(self.actor_target, self.actor, self.tau)
+        soft_update(self.critic_target, self.critic, self.tau)
+        # hard_update(self.actor_target, self.actor)
+        # hard_update(self.critic_target, self.critic)
 
 
     def eval(self):
@@ -172,16 +182,19 @@ class MADDPG(object):
             self.s_t = s_t1
 
     def random_action(self):
-        action = np.random.uniform(-1.,1.,self.n_actions)
+        action = np.random.uniform(0., 1., self.n_actions)
         self.a_t = action
         return action
 
     def select_action(self, s_t, decay_epsilon=True):
-        action = to_numpy(
-            self.actor(to_tensor(np.array([s_t])))
-        ).squeeze(0)
-        action += self.is_trainning * max(self.epsilon, 1e-2) * self.random_process.sample()
-        action = np.clip(action, -1., 1.)
+        if random.random() <= max(self.epsilon, 1e-1):
+            action = self.random_action()
+        else:
+            action = to_numpy(
+                self.actor(to_tensor(np.array([s_t])))
+            ).squeeze(0)
+            # action += self.is_trainning * max(self.epsilon, 1e-1) * self.random_process.sample()
+            action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
             self.epsilon -= self.depsilon

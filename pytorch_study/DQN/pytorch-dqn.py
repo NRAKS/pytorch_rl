@@ -72,7 +72,7 @@ class DQN(nn.Module):
         y_label = []
         q_prime = self.forward(Variable(torch.from_numpy(np.array(new_state)).float())).data.numpy()
         #get the y_label e.t. the r+Q(s',a',w-)
-        for i in xrange(self.batch_size):
+        for i in range(self.batch_size):
             if done[i]:
                 y_label.append(reward[i])
             else:
@@ -97,7 +97,7 @@ agent = DQN(state_dim, action_dim)
 
 optimizer = torch.optim.Adam(agent.parameters(),lr=1e-3)  
 
-for i in xrange(1000):
+for i in range(1000):
     state = env.reset()
     while True:
         tensor_state = torch.from_numpy(np.expand_dims(state, axis = 0)).float()
@@ -110,7 +110,7 @@ for i in xrange(1000):
     
     if i % 100 == 99:
         total_reward = 0
-        for step in xrange(100):
+        for step in range(100):
             state = env.reset()
             while True:
                 env.render()
@@ -126,7 +126,7 @@ for i in xrange(1000):
             break
 
 env = gym.wrappers.Monitor(env, 'monitor', force = True)
-for step in xrange(100):
+for step in range(100):
             state = env.reset()
             while True:
                 env.render()
