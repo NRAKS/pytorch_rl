@@ -23,12 +23,24 @@ def save_pickle(data, title):
     with open("output/{}/config/{}.pickle" .format(time, title), mode='wb') as f:
         pickle.dump(data, f)
 
+def change_aspect_ratio(ax, ratio):
+    '''
+    This function change aspect ratio of figure.
+    Parameters:
+        ax: ax (matplotlit.pyplot.subplots())
+            Axes object
+        ratio: float or int
+            relative x axis width compared to y axis width.
+    '''
+    aspect = (1/ratio) *(ax.get_xlim()[1] - ax.get_xlim()[0]) / (ax.get_ylim()[1] - ax.get_ylim()[0])
+    return aspect
+
 
 def graph(graph, NUM_AGENT, xlabel=None, ylabel=None, policy_name=None, label=None, color=None, y_lim=None, path=None, title=None):
 
     os.makedirs(path, exist_ok=True)
     # print("{}, {}グラフ作成" .format(policy_name, ylabel))
-
+    plt.figure(figsize=[10, 5])
     if y_lim is not None:
         plt.ylim(y_lim)
 
