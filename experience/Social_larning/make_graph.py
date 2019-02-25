@@ -14,7 +14,7 @@ params = {'mathtext.default': 'regular'}
 plt.rcParams.update(params)
 fontsize=18
 alpha = 1.0
-alpha_dec = 0.2
+alpha_dec = 0.25
 time = time.asctime()
 
 

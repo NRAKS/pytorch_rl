@@ -43,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.output = get_output_folder(args.output, args.env)
     if args.resume == 'default':
-        args.resume = 'output/{}-{}'.format(args.env, time)
+        args.resume = 'output/{}-{}-{}'.format(args.env, args.train_simulation, time)
 
     # env = gym.make(args.env)
     env = enviroment.make(args.env)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # data = np.array([reward_dqn, reward_ddqn])
     # data = np.array([reward_dqn])
-    data_label = np.array([["dqn 0", "dqn 1", "sum_reward"], None, "store"])
+    data_label = np.array([["sum_reward", "dqn 0", "dqn 1"], None, "store"])
     title_label = np.array(["reward", "action_ratio", "store_count"])
     if env.n_action == 3:
         data_label[1] = ["Act", "Do nothing", "Store"]

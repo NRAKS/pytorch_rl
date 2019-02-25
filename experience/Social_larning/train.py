@@ -102,6 +102,10 @@ def multi_train(agent, env, simulation_times, episode_times, step_times, pre_ste
                 reward_graph[n, n_episode] += reward_epi[n, n_episode]
 
     reward_graph[-1] = reward_graph[0] + reward_graph[1]
+    a = deepcopy(reward_graph[2])
+    reward_graph[2] = reward_graph[1]
+    reward_graph[1] = reward_graph[0]
+    reward_graph[0] = a
     reward_graph /= simulation_times
     action_graph /= simulation_times
     store_graph_epi /= simulation_times
