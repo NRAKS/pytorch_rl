@@ -132,20 +132,21 @@ class simple_planning_ex(simple_planning):
         return reward
 
 
-class simple_planning_comu(simple_planning):
+class communication_planning(simple_planning):
     def __init__(self):
         super().__init__()
-        self.n_observation_agent0 = 2   # time, pre_opponent_action
+        self.n_observation = 3
+        self.n_observation_agent0 = 3   # time, pre_opponent_action
         self.n_observation_agent1 = 3   # time, pre_opponent_action, opponent_opinion
-        self.observation_agent1 = np.zeros((self.n_agent, self.n_observation_agent1))
-        self.init_observation_agent1 = np.zeros((self.n_agent, self.n_observation, init_observation_agent1))
-    
+        self.observation_agent0 = np.zeros(self.n_observation_agent0)
+        self.observation_agent1 = np.zeros(self.n_observation_agent1)
+        # self.observation = np.asarray([self.observation_agent0, self.observation_agent1])
+        self.observation = np.asarray([np.zeros(self.n_observation_agent0), np.zeros(self.n_observation_agent1)])
+        self.init_observation = deepcopy(self.observation)
+        print(self.observation)
+        # print("observation:{}" .format(self.observation))
+        # print("init_observation:{}" .format(self.init_observation))
 
-    
-    def reset(self):
-        self.observation = deepcopy(self.init_observation)
-        self.observation_agent1 = deepcopy(self.init_observation_agent1)
-        return self.observation, self.observation_agent1
 
 
 def make(name):
@@ -153,3 +154,8 @@ def make(name):
         return simple_planning()
     elif name == 'simple_planning_ex':
         return simple_planning_ex()
+    elif name == 'communication_planning':
+        return communication_planning()
+    else:
+        print("Error!")
+        exit

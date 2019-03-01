@@ -4,7 +4,7 @@ import torch as th
 import argparse
 import time
 
-from train import multi_train as train
+from train import multi_train_comu as train
 
 from dqn import DQN
 from ddqn import DDQN
@@ -54,17 +54,23 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
         # env.seed(args.seed)
 
-    nb_state = env.n_observation
-    nb_action = env.n_action
-
     train_cfg = {
         "simulation_times": args.train_simulation,
         "episode_times": args.train_episode,
         "step_times": args.train_step,
         "pre_step_times": args.pre_step
     }
+
+    # agent_0
+    nb_state = env.n_observation
+    nb_action = env.n_action
+
+    # agent_1
+    # nb_state_1 = env.n_observation
     print("start DQN training...")
-    agent = np.full(2, DQN(nb_state, nb_action, args))
+    # agent作成
+    agent = np.asarray([DQN(nb_state, nb_action, args),
+                        DQN(nb_state, nb_action, args)])
     result_dqn = train(agent, env, **train_cfg)
     # print("reward_dqn:{}" .format(reward_dqn))
     # print("start DDQN training...")
