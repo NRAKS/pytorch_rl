@@ -74,7 +74,7 @@ class simple_planning(object):
 
     def reset(self):
         self.observation = deepcopy(self.init_observation)
-        return self.init_observation
+        return self.observation
 
 
 class simple_planning_ex(simple_planning):
