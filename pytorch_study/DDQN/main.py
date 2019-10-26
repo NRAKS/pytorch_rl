@@ -1,6 +1,7 @@
 import gym
 import numpy as np
 import torch as th
+import pandas as pd
 import argparse
 from train import train
 
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('--init_w', default=0.003, type=float)
     # トレーニング回数関連
     parser.add_argument('--train_simulation', default=1, type=int)
-    parser.add_argument('--train_episode', default=2000, type=int)
+    parser.add_argument('--train_episode', default=3000, type=int)
     parser.add_argument('--train_step', default=5000)
     parser.add_argument('--pre_step', default=1000)
     parser.add_argument('--update_target_timing', default=1000)

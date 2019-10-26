@@ -43,9 +43,7 @@ class DQN(object):
         
         self.epsilon = 1.0
         
-        if USE_CUDA: 
-            print("Using CUDA ...")
-            self.cuda()
+        if USE_CUDA: self.cuda()
 
     def update(self, step):
         state_batch, action_batch, next_state_batch, reward_batch, terminal_batch = self.memory.sample_and_split(self.batch_size)

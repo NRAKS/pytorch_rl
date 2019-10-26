@@ -20,7 +20,7 @@ def train(agent, env, simulation_times, episode_times, step_times, pre_step_time
             sys.stdout.write("\rsimu:%s/%s, epi:%s/%s" % (str(n_simulation), str(simulation_times-1), str(n_episode), str(episode_times-1)))
             while True:
                 if simulation_step < pre_step_times:
-                    action = env.action_space.sample()
+                    action = agent.random_action()
                 else:
                     action = agent.select_action(obs)
 
